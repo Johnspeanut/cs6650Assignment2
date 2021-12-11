@@ -5,14 +5,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 
 public class Main {
@@ -23,20 +16,6 @@ public class Main {
   private static String passwd = "guest";
   private static int THREAD_NUMBER = 128;
   private final static ConcurrentHashMap<Integer, Integer> map = new ConcurrentHashMap<>();
-
-//  public static void main(String[] args) throws IOException, TimeoutException, InterruptedException {
-//    ConnectionFactory factory = new ConnectionFactory();
-//    factory.setHost(ipAddress);
-//    factory.setUsername(userName);
-//    factory.setPassword(passwd);
-//    Connection connection = factory.newConnection();
-//    Thread[] tids = new Thread[THREAD_NUMBER];
-//    for (int i = 0; i < THREAD_NUMBER; i++) {
-//      tids[i] = new Thread(new PostHandler(connection));
-//      tids[i].start();
-//    }
-//
-//  }
 
 
   public static void main(String[] args) throws IOException, TimeoutException {
@@ -64,12 +43,10 @@ public class Main {
               message = message.replaceAll("^\"+|\"+$", "");
               System.out.println("Receive : " + message);
               String[] result = message.split(",");
-//              for(int j = 0; j < result.length; j++){
-//                System.out.println(j + ":" + result[j]);
-//              }
+
               int liftId = Integer.valueOf(result[5]);
               map.put(liftId, map.getOrDefault(liftId, 0) + 1);
-//              System.out.println("Map : " + map.toString());
+
             }catch (RuntimeException e){
               System.out.println("Error : " + e.toString());
             }finally {
@@ -79,17 +56,6 @@ public class Main {
               }
             }
 
-
-//            String message = new String(delivery.getBody(), "UTF-8");
-//            channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
-//            System.out.println( "Callback thread ID = " + Thread.currentThread().getId() + " Received '" + message + "'");
-//            String[] result = message.split(",");
-//            int liftId = Integer.valueOf(result[0]);
-//            int skierId = Integer.valueOf(result[1]);
-//            // update hashmap
-//            List<Integer> list = map.getOrDefault(skierId, Collections.synchronizedList(new ArrayList<Integer>()));
-//            list.add(liftId);
-//            map.put(skierId, list);
           };
 
           // process messages

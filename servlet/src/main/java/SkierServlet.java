@@ -108,21 +108,6 @@ public class SkierServlet extends HttpServlet {
       }
     }
 
-
-//    response.setContentType("application/json");
-//    Channel channel = null;
-//    try {
-//      channel = blockingDeque.take();
-//    } catch (InterruptedException e) {
-//      e.printStackTrace();
-//    }
-//    channel.queueDeclare("post", false, false, false, null);
-//    String body = request.getReader().lines().collect(Collectors.joining());
-//    channel.basicPublish("", "post", null, new Gson().toJson(body).getBytes());
-//    blockingDeque.add(channel);
-//    response.setStatus(HttpServletResponse.SC_OK);
-//    SkierRecord skierRecordResponse = new Gson().fromJson(getBodyContent(request), SkierRecord.class);
-//    response.getWriter().write(new Gson().toJson(skierRecordResponse));
   }
 
   private boolean isPostUrlValid(String[] urlPath) {

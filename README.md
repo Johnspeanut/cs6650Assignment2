@@ -1,97 +1,88 @@
-# Github Repo Link
+# 1.Github Repo Link
 
 https://github.com/Johnspeanut/cs6650Assignment2
 
-# 1. Server Design
+# 2. Description of Server Design
 
-## 1. 1 Overview
+## 2.1 Overview
 
-The server implementation includes two tools: servlet and RabbitMQ. Once a post request is received, the server constructs a request entity `SkierServletPostResponse` based on the request and pushes the json format of the data to the RabbitMQ. In this case, the server is only responsible for accepting the user requests, and delivers the computation task to the consumer of the RabbitMQ. 
+The server uses Tomcat for executing http request and RabbitMQ for message container. As long as a post request is received, the server will validate the url path as first. If the path is valid, a message object will be constructed based on `LiftRide`. The server then pushes the message object to RabbitMQ queue, where the consumer will pull messsages from it. 
 
-Overrall, there are five EC2 instances running behind the server. One instance is dedicated to the RabbitMQ server. The other four instances form a target group behind the load balancer. The RabbitMQ consumer is in one of the four Tomcat web application servers. (That's because AWS always terminates my sixth instances, and I don't know why..) It turns out that five EC2 instances works fine for the given task. 
+## 2.2 Server package
 
-## 1.2 New Classes compared to the last server implementation
+### 2.2.1 `SkierServlet` class
+This class extends `HttpServlet` and aims to process post requests from client side and push messages to RabmitMQ queue. Creating connections are heavy workloads. In my case,connections are created in `init()` method so that it does not bother to generate them when calling `doPost()` method. Also, the class includes `isUrlValid()`, `isValidSkierLiftUrl()` to validate the http request.
 
-### 1.2.1 `RabbitMQDriver` class
+### 2.2.2 `LiftRide`
+This class is to encapsulate a lift ride record. It includes constructor, get methods, and set methods.
 
-This class is responsible for the management of the RabbitMQ connections. It is responsible to fetch the necessary information to connect to the RabbitMQ, and return the connection factory.
+### 2.2.3 `LiftRideRequest`
+This class is to encapsulate a lift ride request record. It includes constructor, get methods, and set methods.
 
-I realized that it was very bad to directly store the credential information in the code. The correct way to fetch the important information such as ip address, user name or password, is to store it in a third place, where the program is able to fetch these information by specifying the key to the credentials. So I stored all of them in the environment variables, and the program will fetch these information during runtime. 
+## 2.3 Consumer package
+It only includes `Main` class. The message information is saved in a `ConcurrentHashMap`.
 
-Another benefit is that we can modify the resources of the program by simply changing the environment variables, rather than modify the code. It makes the configuration change very easy. 
+## 2.4 Client package
+This package incorporates `Counter`, `LiftRideRequest`, `Main`,`Phase`, and `UpicHttpClient` classes. The package aims to send http request to Tomcat promptly. 
 
-### 1.2.2 `ChannelPool` interface and its implementation `BlockingChannelPool`
 
-The channel pool is used to reduce the connection time between the Tomcat server and the RabbitMQ server. Here I made use of the Blocking queue to manage the pool. The interface `ChannelPool` adopted the singleton pattern so that only one blocking queue exists in the lifetime of the program. 
+# 3. Test Runs
 
-It supports three methods:
+## 3.1 64-Threads in client
 
-*   `init()`: initialize the channel pool. It would do nothing if the channel pool has been initialized. 
-*   `take()`: borrow one channel from the pool if the blocking queue is not empty. Otherwise the thread is blocked.
-*   `add()`: add one channel to the pool. 
-
-## 1.3 How messages get sent/received
-
-After the Tomcat server receives the user request, it would constructs a json message including the necessary information to describe the request. The message is sent to the RabbitMQ queue, waiting for the processing of RabbitMQ consumer. 
-
-Once one of the thread in RabbitMQ consuer is free, it will fetch one message from the RabbitMQ. Thus, the request finally starts to be processed. Currently, the consumer only stores the information to one hash map. After that, the user request is finished. 
-
-# 2. Test Runs
-
-## 2.1 64-Threads
-
-*   number of Tomcat servers: 4
+*   number of Tomcat servers: 1
 *   number of channels in each Tomcat server: 64
 *   number of threads in the consumer: 128
 *   basicQos for each channel in consumer: 10
 
 ![64-threads-1](images/64-threads-1.PNG)
 
-![64-threads-2](images/64-threads-2.png)![64-threads-3](images/64-threads-3.png)
+![64-threads-2](images/64-threads-2.PNG)![64-threads-3](images/64-threads-3.PNG)
 
-![64-threads-result](images/64-threads-result.png)
+![64-threads-result](images/64-threads-result.PNG)
 
-## 2.2 128-Threads
+## 3.2 128-Threads in client
 
-*   number of Tomcat servers: 4
+*   number of Tomcat servers: 1
 *   number of channels in each Tomcat server: 64
 *   number of threads in the consumer: 128
 *   basicQos for each channel in consumer: 10
 
-![128-threads-1](images/128-threads-1.png)
+![128-threads-1](images/128-threads-1.PNG)
 
-![128-threads-2](images/128-threads-2.png)
+![128-threads-2](images/128-threads-2.PNG)
 
-![128-threads-3](images/128-threads-3.png)
+![128-threads-3](images/128-threads-3.PNG)
 
-![128-threads-result](/Users/qinhongbo/Github/CS6650-Assignment2/images/128-threads-result.png)
+![128-threads-result](/Users/qinhongbo/Github/CS6650-Assignment2/images/128-threads-result.PNG)
 
-## 2.3 256-Threads
+## 3.3 256-Threads in client
 
-*   number of Tomcat servers: 4
+*   number of Tomcat servers: 1
 *   number of channels in each Tomcat server: 64
 *   number of threads in the consumer: 128
 *   basicQos for each channel in consumer: 10
 
-![256-threads-1](images/256-threads-1.png)
+![256-threads-1](images/256-threads-1.PNG)
 
-![256-threads-2](images/256-threads-2.png)
+![256-threads-2](images/256-threads-2.PNG)
 
-![256-threads-3](images/256-threads-3.png)
+![256-threads-3](images/256-threads-3.PNG)
 
-![256-threads-result](images/256-threads-result.png)
+![256-threads-result](images/256-threads-result.PNG)
 
-## 2.4 512-threads
+# 4. Bonus Points
+## 4.1 512-threads in client test run
 
-*   number of Tomcat servers: 4
+*   number of Tomcat servers: 1
 *   number of channels in each Tomcat server: 64
 *   number of threads in the consumer: 256
 *   basicQos for each channel in consumer: 10
 
-![512-threads-1](images/512-threads-1.png)
+![512-threads-1](images/512-threads-1.PNG)
 
-![512-threads-2](images/512-threads-2.png)
+![512-threads-2](images/512-threads-2.PNG)
 
-![512-threads-3](images/512-threads-3.png)
+![512-threads-3](images/512-threads-3.PNG)
 
-![512-threads-result](images/512-threads-result.png)
+![512-threads-result](images/512-threads-result.PNG)
