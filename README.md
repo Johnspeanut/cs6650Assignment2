@@ -54,7 +54,7 @@ This package incorporates `Counter`, `LiftRideRequest`, `Main`,`Phase`, and `Upi
 
 ![128-threads-3](images/128-threads-3.PNG)
 
-![128-threads-result](/Users/qinhongbo/Github/CS6650-Assignment2/images/128-threads-result.PNG)
+![128-threads-result](/images/128-threads-result.PNG)
 
 ## 3.3 256-Threads in client
 

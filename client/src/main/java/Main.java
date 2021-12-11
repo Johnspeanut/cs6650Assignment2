@@ -19,7 +19,7 @@ public class Main {
      * number of threads in the consumer: 128
      * basicQos for each channel in consumer: 10
      */
-//    int numThread = 128;
+    int numThread = 128;
 
     /**
      * Scenario 3
@@ -29,7 +29,7 @@ public class Main {
      * number of threads in the consumer: 128
      * basicQos for each channel in consumer: 10
      */
-    int numThread = 256;
+//    int numThread = 256;
 
     /**
      * Scenario 4
