@@ -1,6 +1,6 @@
 # Github Repo Link
 
-https://github.com/qhb1001/CS6650-Assignment2
+https://github.com/Johnspeanut/cs6650Assignment2
 
 # 1. Server Design
 
